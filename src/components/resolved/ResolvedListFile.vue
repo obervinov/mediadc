@@ -34,7 +34,6 @@
 					:src="imageUrl"
 					:alt="file.filename"
 					:title="file.filepath"
-					loading="lazy"
 					decoding="async"
 					@load="onLoad">
 			</div>

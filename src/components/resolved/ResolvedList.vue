@@ -148,7 +148,6 @@
 								<img :src="imageUrl(photo.fileid)"
 									:width="thumbSize"
 									:height="thumbSize"
-									loading="lazy"
 									decoding="async">
 							</div>
 						</template>
