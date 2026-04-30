@@ -47,7 +47,7 @@ class Version0004Date20260430162000 extends SimpleMigrationStep {
 		}
 
 		$tasksDetailsTable = $schema->getTable('mediadc_tasks_details');
-		$indexName = 'mediadc_details_task_group_fileid__index';
+		$indexName = 'mdc_td_tgid_fid_idx';
 
 		if (!$tasksDetailsTable->hasIndex($indexName)) {
 			$tasksDetailsTable->addIndex(['task_id', 'group_id', 'fileid'], $indexName);
