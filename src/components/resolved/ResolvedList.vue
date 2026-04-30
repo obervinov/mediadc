@@ -145,10 +145,7 @@
 						</template>
 						<template #icon>
 							<div class="resolved-img-icon">
-								<img :src="imageUrl(photo.fileid)"
-									:width="thumbSize"
-									:height="thumbSize"
-									decoding="async">
+								<img :src="imageUrl(photo.fileid)" :width="thumbSize" :height="thumbSize">
 							</div>
 						</template>
 						<template #actions>
@@ -274,7 +271,7 @@ export default {
 			})
 		},
 		imageUrl(fileid) {
-			return generateUrl(`/core/preview?fileId=${fileid}&x=${this.thumbSize}&y=${this.thumbSize}&forceIcon=0`)
+			return generateUrl(`/core/preview?fileId=${fileid}&x=${this.thumbSize}&y=${this.thumbSize}$forceIcon=0`)
 		},
 		fileTitle(photo) {
 			return `${photo.filename} (${this.formatBytes(Number(photo.filesize))})`

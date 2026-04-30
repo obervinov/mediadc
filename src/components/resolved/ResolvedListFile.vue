@@ -34,7 +34,6 @@
 					:src="imageUrl"
 					:alt="file.filename"
 					:title="file.filepath"
-					decoding="async"
 					@load="onLoad">
 			</div>
 			<div v-show="!loaded && file.filempart === 'video'"
@@ -120,7 +119,7 @@ export default {
 			'detailsGridSize',
 		]),
 		imageUrl() {
-			return generateUrl(`/core/preview?fileId=${this.file.fileid}&x=${this.detailsGridSize}&y=${this.detailsGridSize}&forceIcon=0`)
+			return generateUrl(`/core/preview?fileId=${this.file.fileid}&x=${this.detailsGridSize}&y=${this.detailsGridSize}$forceIcon=0`)
 		},
 	},
 	methods: {
