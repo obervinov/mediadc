@@ -1,21 +1,16 @@
-## This Repository is Archived
+# Maintained fork
 
-We are immensely grateful to everyone who has been a part of the Nextcloud MediaDC journey. Your contributions and support have been invaluable.
-
-Unfortunately, we no longer have the capacity to maintain this repository, and it is now in an archived state. We need to move forward, and we thank you for your understanding.
+This fork keeps **the same Nextcloud app id (`mediadc`)** so it can replace the archived upstream app in an existing installation without breaking the app data model. The primary goal of this fork is to make large duplicate sets usable again on self-hosted instances with big photo/video libraries.
 
 # Nextcloud MediaDC
 
-![build](https://github.com/cloud-py-api/mediadc/actions/workflows/create-release-draft.yml/badge.svg)
-[![Publish to Nextcloud app store](https://github.com/cloud-py-api/mediadc/actions/workflows/publish-appstore.yml/badge.svg)](https://github.com/cloud-py-api/mediadc/actions/workflows/publish-appstore.yml)
-[![Test Binaries](https://github.com/cloud-py-api/mediadc/actions/workflows/test-binaries.yml/badge.svg)](https://github.com/cloud-py-api/mediadc/actions/workflows/test-binaries.yml)
-[![Github All Releases](https://img.shields.io/github/downloads/andrey18106/mediadc/total.svg)](https://github.com/cloud-py-api/mediadc/releases)
+[![Fork repository](https://img.shields.io/badge/fork-obervinov%2Fmediadc-blue)](https://github.com/obervinov/mediadc)
 
 
 
 **📸📹 Collect photo and video duplicates to save your cloud storage space**
 
-**[cloud_py_api](https://apps.nextcloud.com/apps/cloud_py_api)** required to be installed and enabled first.
+**[cloud_py_api](https://apps.nextcloud.com/apps/cloud_py_api)** must be installed and enabled before MediaDC.
 
 | **Not working on FreeBSD systems for now**
 
@@ -29,25 +24,33 @@ Nextcloud Media Duplicate Collector application
 * **💡 Easily saves your cloud storage space and time for sorting**
 * **⚙ Flexible configuration**
 
+## What is different in this fork?
+
+This fork starts with a narrow performance-focused patch set for the duplicate details UI:
+
+* **Fixes malformed preview URLs** so preview requests are generated correctly.
+* **Lazy-loads thumbnails** on details/resolved screens to avoid pulling every preview immediately.
+* **Stages group opening requests** instead of bursting all duplicate-group fetches in parallel.
+* **Uses a composite index** for hot duplicate-detail lookups.
+* **Avoids repeated in-loop filesize sorting** when loading the files of a duplicate group.
+
 ## 🚀 Installation
 
-First of all, in you Nextcloud install and enable [`cloud_py_api`](https://apps.nextcloud.com/apps/cloud_py_api) through the Apps management, then install MediaDC app.
-Starting from 0.2.0 version MediaDC is only included in Nextcloud v25 and higher.
-#### Read more on [Wiki page](https://github.com/cloud-py-api/mediadc/wiki)
+This fork is meant to be delivered as a **custom app** rather than through the Nextcloud App Store:
 
-## Maintainers
+1. Install and enable [`cloud_py_api`](https://apps.nextcloud.com/apps/cloud_py_api).
+2. Stage this repository into `custom_apps/mediadc` in your Nextcloud deployment.
+3. Enable the app with `php occ app:enable --force mediadc`.
+
+The infrastructure used for this fork syncs the repository into `custom_apps/mediadc` via a Kubernetes init container, then enables the managed app set with `occ` during startup.
+
+Starting from 0.2.0 version MediaDC is only included in Nextcloud v25 and higher.
+
+## Upstream maintainers
 
 * [Andrey Borysenko](https://github.com/andrey18106)
 * [Alexander Piskun](https://github.com/bigcat88)
 
-## State of the Maintenance
+## Fork maintenance notes
 
-As Andrey and I(Alexander) are fully committed to the **NextCloud App Ecosystem** project, 
-we will be working tirelessly around the clock for the next two months. 
-Due to our intense dedication to that project, our availability will be limited during this period. 
-However, we encourage and welcome any contributions from the community in the form of pull requests.
-
-After Nextcloud App Ecosystem V2 finished we'll rewrite MediaDC to use the new system, and write many other amazing applications.
-
-For All Coders who want to write New Amazing Applications for 
-Nextcloud with New App Ecosystem - we are avalaible to discuss its API, prototypes, etc. in their repositories. 
+The upstream repository is archived, so this fork keeps the app alive for production self-hosting use. The current focus is operational stability and performance on large media libraries rather than App Store publication.

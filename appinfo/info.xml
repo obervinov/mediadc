@@ -20,19 +20,19 @@ This app allows to find duplicate or similar 📸📹 photos and videos
 Quick start guide and further information in our [Wiki](https://github.com/cloud-py-api/mediadc/wiki).
 	]]>
 	</description>
-	<version>0.4.0</version>
+	<version>0.4.1</version>
 	<licence>agpl</licence>
 	<author mail="andrey18106x@gmail.com" homepage="https://github.com/andrey18106">Andrey Borysenko</author>
 	<author mail="bigcat88@icloud.com" homepage="https://github.com/bigcat88">Alexander Piskun</author>
 	<namespace>MediaDC</namespace>
 	<documentation>
-		<admin>https://github.com/cloud-py-api/mediadc/wiki</admin>
+	<admin>https://github.com/obervinov/mediadc/wiki</admin>
 	</documentation>
 	<category>tools</category>
 	<category>multimedia</category>
-	<website>https://github.com/cloud-py-api/mediadc</website>
-	<bugs>https://github.com/cloud-py-api/mediadc/issues</bugs>
-	<repository type="git">https://github.com/cloud-py-api/mediadc.git</repository>
+	<website>https://github.com/obervinov/mediadc</website>
+	<bugs>https://github.com/obervinov/mediadc/issues</bugs>
+	<repository type="git">https://github.com/obervinov/mediadc.git</repository>
 	<screenshot>https://raw.githubusercontent.com/cloud-py-api/mediadc/main/screenshots/mediadc_home.png</screenshot>
 	<screenshot>https://raw.githubusercontent.com/cloud-py-api/mediadc/main/screenshots/mediadc_task_details_1.png</screenshot>
 	<screenshot>https://raw.githubusercontent.com/cloud-py-api/mediadc/main/screenshots/mediadc_task_details_2.png</screenshot>

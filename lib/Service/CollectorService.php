@@ -663,7 +663,10 @@ class CollectorService {
 	 */
 	public function getDetailGroupFilesInfo(int $taskId, int $groupId, bool $filesizeAscending) {
 		try {
-			$groupFileids = $this->tasksDetailsMapper->findAllByGroupId($taskId, $groupId);
+			$groupFileids = $this->tasksDetailsMapper->findAllByGroupIdSize($taskId, $groupId);
+			if ($filesizeAscending) {
+				$groupFileids = array_reverse($groupFileids);
+			}
 			$filesInfo = [];
 			foreach ($groupFileids as $groupFileId) {
 				/** @var File $node */
@@ -682,17 +685,6 @@ class CollectorService {
 						]);
 					}
 				}
-				// Sort page files by filesize (ascending/descending)
-				usort(
-					$filesInfo,
-					($filesizeAscending) ?
-						function (array $file_x, array $file_y) {
-							return $file_x['filesize'] - $file_y['filesize'];
-						}
-					: function (array $file_x, array $file_y) {
-						return $file_y['filesize'] - $file_x['filesize'];
-					}
-				);
 			}
 			return [
 				'files' => $filesInfo,

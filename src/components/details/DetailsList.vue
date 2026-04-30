@@ -71,6 +71,7 @@
 					<NcButton v-tooltip="t('mediadc', 'Toggle duplicate groups')"
 						type="tertiary"
 						:aria-label="t('mediadc', 'Toggle duplicate groups')"
+						:disabled="togglingGroups"
 						style="margin-right: 10px;"
 						@click="toggleGroups">
 						<template #icon>
@@ -209,6 +210,8 @@ import Formats from '../../mixins/Formats.js'
 import DetailsListItem from './DetailsListItem.vue'
 import Pagination from './Pagination.vue'
 
+const TOGGLE_GROUP_DELAY_MS = 200
+
 export default {
 	name: 'DetailsList',
 	components: {
@@ -232,6 +235,7 @@ export default {
 			batchActionsOpened: false,
 			sortGroups: true,
 			batchDeleting: false,
+			togglingGroups: false,
 		}
 	},
 	computed: {
@@ -461,12 +465,29 @@ export default {
 				}
 			}
 		},
-		toggleGroups() {
-			const _details = (!this.filtered)
+		wait(ms) {
+			return new Promise(resolve => setTimeout(resolve, ms))
+		},
+		async toggleGroups() {
+			if (this.togglingGroups) {
+				return
+			}
+			const details = (!this.filtered)
 				? ((!this.sortGroups) ? this.paginatedDetails[this.page] : this.paginatedSortedDetails[this.page])
 				: ((!this.sortGroups) ? this.paginatedDetailsFiltered[this.page] : this.paginatedDetailsFilteredSorted[this.page])
-			for (const detail of _details) {
-				emit('toggleGroup', detail)
+			if (!details || details.length === 0) {
+				return
+			}
+			this.togglingGroups = true
+			try {
+				for (const [index, detail] of details.entries()) {
+					emit('toggleGroup', detail)
+					if (index !== details.length - 1) {
+						await this.wait(TOGGLE_GROUP_DELAY_MS)
+					}
+				}
+			} finally {
+				this.togglingGroups = false
 			}
 		},
 	},

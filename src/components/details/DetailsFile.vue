@@ -34,6 +34,8 @@
 					:src="imageUrl"
 					:alt="file.filename"
 					:title="file.filepath"
+					loading="lazy"
+					decoding="async"
 					@load="onLoad">
 			</div>
 			<div v-show="!loaded && file.filempart === 'video'"
@@ -152,7 +154,7 @@ export default {
 		]),
 		imageUrl() {
 			if (this.file.has_preview) {
-				return generateUrl(`/core/preview?fileId=${this.file.fileid}&x=${this.detailsGridSize}&y=${this.detailsGridSize}$forceIcon=0`)
+				return generateUrl(`/core/preview?fileId=${this.file.fileid}&x=${this.detailsGridSize}&y=${this.detailsGridSize}&forceIcon=0`)
 			} else {
 				return generateRemoteUrl(`dav/files${this.file.filepath.replace('files/', '')}`)
 			}

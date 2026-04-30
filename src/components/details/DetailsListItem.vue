@@ -115,6 +115,43 @@ import { mapGetters } from 'vuex'
 import Formats from '../../mixins/Formats.js'
 import DetailsGroupList from './DetailsGroupList.vue'
 
+const GROUP_FILES_REQUEST_CONCURRENCY = 1
+let activeGroupFilesRequests = 0
+const groupFilesRequestsQueue = []
+
+/**
+ * Drain the shared duplicate-group request queue so opening many groups does
+ * not flood Nextcloud with parallel `/files/{group}/all` requests.
+ */
+function runNextGroupFilesRequest() {
+	if (activeGroupFilesRequests >= GROUP_FILES_REQUEST_CONCURRENCY || groupFilesRequestsQueue.length === 0) {
+		return
+	}
+
+	const { taskId, detailId, resolve, reject } = groupFilesRequestsQueue.shift()
+	activeGroupFilesRequests += 1
+
+	axios.get(generateUrl(`/apps/mediadc/api/v1/tasks/${taskId}/files/${detailId}/all`))
+		.then(resolve)
+		.catch(reject)
+		.finally(() => {
+			activeGroupFilesRequests -= 1
+			runNextGroupFilesRequest()
+		})
+}
+
+/**
+ * @param {number} taskId Duplicate collector task identifier.
+ * @param {number} detailId Duplicate group identifier.
+ * @return {Promise<import('axios').AxiosResponse<any>>}
+ */
+function queueGroupFilesRequest(taskId, detailId) {
+	return new Promise((resolve, reject) => {
+		groupFilesRequestsQueue.push({ taskId, detailId, resolve, reject })
+		runNextGroupFilesRequest()
+	})
+}
+
 export default {
 	name: 'DetailsListItem',
 	components: {
@@ -261,12 +298,19 @@ export default {
 			}
 		},
 		loadAllFilesInfo(taskId, detailId) {
-			axios.get(generateUrl(`/apps/mediadc/api/v1/tasks/${taskId}/files/${detailId}/all`)).then(res => {
-				this.allFiles = res.data.files
-				this.paginatedFiles = this.paginateFiles(this.allFiles)
-				this.files = this.paginatedFiles[this.page]
-				this.loadingFiles = false
-			})
+			queueGroupFilesRequest(taskId, detailId)
+				.then(res => {
+					this.allFiles = res.data.files
+					this.paginatedFiles = this.paginateFiles(this.allFiles)
+					this.files = this.paginatedFiles[this.page]
+					this.loadingFiles = false
+				})
+				.catch(err => {
+					console.debug(err)
+					showError(this.t('mediadc', 'An error occurred while loading duplicate group files'))
+					this.loadingFiles = false
+					this.opened = false
+				})
 		},
 		paginateFiles(files) {
 			const paginatedFiles = []
