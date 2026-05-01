@@ -1,0 +1,103 @@
+name: Build release package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  APP_NAME: mediadc
+  NODE_VERSION: '20'
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Validate tag and app version
+        id: meta
+        run: |
+          APP_VERSION="$(grep -oPm1 '(?<=<version>)[^<]+' appinfo/info.xml)"
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          LOCKFILE_VERSION="$(node -p "require('./package-lock.json').version")"
+          TAG_NAME="${GITHUB_REF_NAME}"
+
+          if [ "$APP_VERSION" != "$PACKAGE_VERSION" ] || [ "$APP_VERSION" != "$LOCKFILE_VERSION" ]; then
+            echo "Version mismatch detected:"
+            echo "appinfo/info.xml: $APP_VERSION"
+            echo "package.json: $PACKAGE_VERSION"
+            echo "package-lock.json: $LOCKFILE_VERSION"
+            exit 1
+          fi
+
+          if [ "$TAG_NAME" != "v$APP_VERSION" ]; then
+            echo "Tag $TAG_NAME does not match app version v$APP_VERSION"
+            exit 1
+          fi
+
+          if [[ "$APP_VERSION" == *"beta"* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "version=$APP_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint frontend
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Install Krankerl
+        run: |
+          wget -q https://github.com/ChristophWurst/krankerl/releases/download/v0.14.0/krankerl_0.14.0_amd64.deb
+          sudo dpkg -i krankerl_0.14.0_amd64.deb
+
+      - name: Package app
+        run: krankerl package || make appstore
+
+      - name: Create checksums
+        run: |
+          cd build/artifacts
+          sha256sum "${APP_NAME}.tar.gz" > "${APP_NAME}.tar.gz.sha256"
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-${{ steps.meta.outputs.version }}
+          path: |
+            build/artifacts/${{ env.APP_NAME }}.tar.gz
+            build/artifacts/${{ env.APP_NAME }}.tar.gz.sha256
+          if-no-files-found: error
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: ${{ env.APP_NAME }} ${{ steps.meta.outputs.version }}
+          generate_release_notes: true
+          prerelease: ${{ steps.meta.outputs.prerelease == 'true' }}
+          files: |
+            build/artifacts/${{ env.APP_NAME }}.tar.gz
+            build/artifacts/${{ env.APP_NAME }}.tar.gz.sha256
