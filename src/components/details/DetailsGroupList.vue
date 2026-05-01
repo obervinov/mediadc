@@ -230,10 +230,9 @@ export default {
 			axios.post(generateUrl(`/apps/mediadc/api/v1/tasks/${this.detail.task_id}/files/${this.detail.group_id}/remove`), { fileIds: this.checkedFiles.map(f => f.fileid) }).then(res => {
 				if (res.data.success) {
 					const allFiles = this.allFiles
-					if ((this.allFiles.length - this.checkedFiles.length) <= 1) {
+					const removedGroup = (this.allFiles.length - this.checkedFiles.length) <= 1
+					if (removedGroup) {
 						emit('openNextDetailGroup', this.detail)
-						// Remove detail
-						this.$store.commit('deleteDetail', this.detail)
 						if ((this.allFiles.length - this.checkedFiles.length) === 1) {
 							showMessage(this.t('mediadc', 'Group successfully removed (1 file left)'))
 						}
@@ -249,6 +248,13 @@ export default {
 					emit('updateTaskInfo')
 					this.$emit('update:allFiles', allFiles)
 					emit('updateGroupFilesPagination')
+					if (removedGroup) {
+						this.$store.dispatch('getTaskDetails').then(() => {
+							this.$emit('update:updating', false)
+							showSuccess(this.t('mediadc', 'Checked files successfully removed'))
+						})
+						return
+					}
 					this.$emit('update:updating', false)
 					showSuccess(this.t('mediadc', 'Checked files successfully removed'))
 				}
@@ -289,10 +295,9 @@ export default {
 		},
 		_updateDeletedFiles(res) {
 			const allFiles = this.allFiles
-			if ((this.allFiles.length - this.checkedFiles.length) <= 1 && res.data.deletedFileIds.length === this.checkedFiles.length) {
+			const removedGroup = (this.allFiles.length - this.checkedFiles.length) <= 1 && res.data.deletedFileIds.length === this.checkedFiles.length
+			if (removedGroup) {
 				emit('openNextDetailGroup', this.detail)
-				// Remove detail
-				this.$store.commit('deleteDetail', this.detail)
 				if ((this.allFiles.length - this.checkedFiles.length) === 1) {
 					showMessage(this.t('mediadc', 'Group successfully removed (1 file left)'))
 				}
@@ -310,6 +315,13 @@ export default {
 			emit('updateTaskInfo')
 			this.$emit('update:allFiles', allFiles)
 			emit('updateGroupFilesPagination')
+			if (removedGroup) {
+				this.$store.dispatch('getTaskDetails').then(() => {
+					this.$emit('update:updating', false)
+					showSuccess(this.t('mediadc', 'Checked files successfully deleted'))
+				})
+				return
+			}
 			this.$emit('update:updating', false)
 			showSuccess(this.t('mediadc', 'Checked files successfully deleted'))
 		},

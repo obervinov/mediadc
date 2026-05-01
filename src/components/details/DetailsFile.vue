@@ -227,9 +227,9 @@ export default {
 				.then(res => {
 					if (res.data.success) {
 						const files = this.files
-						if (this.allFiles.length === 2) { // Remove detail when 1 file left
+						const removedGroup = this.allFiles.length === 2
+						if (removedGroup) { // Remove detail when 1 file left
 							emit('openNextDetailGroup', this.detail)
-							this.$store.commit('deleteDetail', this.detail)
 							showMessage(this.t('mediadc', 'Group successfully removed (1 file left)'))
 						}
 						const fileidIndex = files.findIndex(f => f.fileid === file.fileid)
@@ -244,6 +244,12 @@ export default {
 						emit('updateTaskInfo')
 						this.$store.commit('setTask', res.data.task)
 						emit('updateGroupFilesPagination', this.file)
+						if (removedGroup) {
+							this.$store.dispatch('getTaskDetails').then(() => {
+								this.updating = false
+							})
+							return
+						}
 					} else if ('locked' in res.data && res.data.locked) {
 						showWarning(this.t('mediadc', 'Wait until file has been loaded before deleting it'))
 					} else if ('not_permitted' in res.data && res.data.not_permited) {
@@ -266,9 +272,9 @@ export default {
 			axios.post(generateUrl(`/apps/mediadc/api/v1/tasks/${this.detail.task_id}/files/${this.detail.group_id}/remove`), { fileIds: [file.fileid] }).then(res => {
 				if (res.data.success) {
 					const files = this.files
-					if (this.allFiles.length === 2) { // Remove detail when 1 file left
+					const removedGroup = this.allFiles.length === 2
+					if (removedGroup) { // Remove detail when 1 file left
 						emit('openNextDetailGroup', this.detail)
-						this.$store.commit('deleteDetail', this.detail)
 						showMessage(this.t('mediadc', 'Group successfully removed (1 file left)'))
 					}
 					const fileidIndex = files.findIndex(f => f.fileid === file.fileid)
@@ -282,8 +288,14 @@ export default {
 					this.$emit('update:files', files)
 					emit('updateTaskInfo')
 					emit('updateGroupFilesPagination', this.file)
-					this.updating = false
+					if (removedGroup) {
+						this.$store.dispatch('getTaskDetails').then(() => {
+							this.updating = false
+						})
+						return
+					}
 				}
+				this.updating = false
 			}).catch(err => {
 				console.debug(err)
 				showError(this.t('mediadc', 'A server error occurred'))

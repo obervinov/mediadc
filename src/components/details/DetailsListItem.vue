@@ -298,9 +298,6 @@ export default {
 			axios.delete(generateUrl(`/apps/mediadc/api/v1/tasks/${detail.task_id}/detail/${detail.group_id}`)).then(res => {
 				if (res.data.success) {
 					emit('openNextDetailGroup', this.detail)
-					const updatedDetails = [...this.details]
-					const removedDetailIndex = updatedDetails.findIndex(d => d.group_id === this.detail.group_id)
-					updatedDetails.splice(removedDetailIndex, 1)
 					const checkedIndex = this.checkedDetailGroups.findIndex(d => d.group_id === detail.group_id)
 					const newCheckedDetailGroups = [...this.checkedDetailGroups]
 					if (this.checked && checkedIndex !== -1) {
@@ -308,15 +305,10 @@ export default {
 						this.$emit('update:checkedDetailGroups', newCheckedDetailGroups)
 					}
 					emit('updateTaskInfo')
-					this.$store.commit('setDetails', updatedDetails)
-					showSuccess(this.t('mediadc', 'Duplicate group succesffully removed'))
-					const detailCheckedIndex = this.checkedDetailGroups.findIndex(d => d.group_id === detail.group_id)
-					if (detailCheckedIndex !== -1) {
-						const newCheckedDetailGroups = this.checkedDetailGroups
-						newCheckedDetailGroups.splice(detailCheckedIndex, 1)
-						this.$emit('update:checkedDetailGroups', newCheckedDetailGroups)
-					}
-					this.updating = false
+					this.$store.dispatch('getTaskDetails').then(() => {
+						showSuccess(this.t('mediadc', 'Duplicate group succesffully removed'))
+						this.updating = false
+					})
 				} else {
 					showError(this.t('mediadc', 'An error occurred while deleting duplicate group'))
 					this.updating = false
