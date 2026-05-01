@@ -140,7 +140,15 @@ class CollectorTaskDetailMapper extends QBMapper {
 	 *
 	 * @return array
 	 */
-	public function findAllByIdGroupped(int $taskId, ?int $limit = null, ?int $offset = null): array {
+	public function findAllByIdGroupped(
+		int $taskId,
+		?int $limit = null,
+		?int $offset = null,
+		?int $groupIdFrom = null,
+		?int $groupIdTo = null,
+		bool $sortByFilesCount = false,
+		bool $sortDescending = false,
+	): array {
 		$qb = $this->db->getQueryBuilder();
 		$platform = $this->db->getDatabasePlatform()->getName();
 		if ($platform === 'mysql') {
@@ -153,17 +161,38 @@ class CollectorTaskDetailMapper extends QBMapper {
 		$qb->select(
 			'mdc_t_d.task_id',
 			'mdc_t_d.group_id',
+			$qb->createFunction('COUNT(ocf.fileid) as filescount'),
 			$grouppedFileIdsFunction,
 			$grouppedFilesSizesFunction,
 		)
 			->from($this->tableName, 'mdc_t_d')
 			->innerJoin('mdc_t_d', 'filecache', 'ocf', 'ocf.fileid=mdc_t_d.fileid')
+			->where($qb->expr()->eq('mdc_t_d.task_id', $qb->createNamedParameter($taskId, IQueryBuilder::PARAM_INT)))
 			->groupBy('mdc_t_d.task_id', 'mdc_t_d.group_id')
-			->having($qb->expr()->eq('mdc_t_d.task_id', $qb->createNamedParameter($taskId, IQueryBuilder::PARAM_INT)))
-			->orderBy('mdc_t_d.group_id', 'ASC')
 			->setMaxResults($limit)
 			->setFirstResult($offset);
+		$this->applyGroupIdFilter($qb, $groupIdFrom, $groupIdTo);
+		if ($sortByFilesCount) {
+			$qb->orderBy('filescount', $sortDescending ? 'DESC' : 'ASC')
+				->addOrderBy('mdc_t_d.group_id', 'ASC');
+		} else {
+			$qb->orderBy('mdc_t_d.group_id', 'ASC');
+		}
 		return $qb->executeQuery()->fetchAll();
+	}
+
+	public function countGroupsByTaskId(
+		int $taskId,
+		?int $groupIdFrom = null,
+		?int $groupIdTo = null,
+	): int {
+		$qb = $this->db->getQueryBuilder();
+		$qb->select($qb->createFunction('COUNT(DISTINCT group_id) as total'))
+			->from($this->tableName, 'mdc_t_d')
+			->where($qb->expr()->eq('mdc_t_d.task_id', $qb->createNamedParameter($taskId, IQueryBuilder::PARAM_INT)));
+		$this->applyGroupIdFilter($qb, $groupIdFrom, $groupIdTo);
+		$row = $qb->executeQuery()->fetch();
+		return $row === false ? 0 : intval($row['total']);
 	}
 
 	/**
@@ -254,5 +283,14 @@ class CollectorTaskDetailMapper extends QBMapper {
 			->andWhere($qb->expr()->in('fileid', $qb->createNamedParameter($fileids, IQueryBuilder::PARAM_INT_ARRAY)))
 			->executeStatement();
 		return $result;
+	}
+
+	private function applyGroupIdFilter(IQueryBuilder $qb, ?int $groupIdFrom = null, ?int $groupIdTo = null): void {
+		if ($groupIdFrom !== null) {
+			$qb->andWhere($qb->expr()->gte('mdc_t_d.group_id', $qb->createNamedParameter($groupIdFrom, IQueryBuilder::PARAM_INT)));
+		}
+		if ($groupIdTo !== null) {
+			$qb->andWhere($qb->expr()->lte('mdc_t_d.group_id', $qb->createNamedParameter($groupIdTo, IQueryBuilder::PARAM_INT)));
+		}
 	}
 }

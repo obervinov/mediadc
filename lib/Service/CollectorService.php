@@ -946,7 +946,11 @@ class CollectorService {
 		int $taskId,
 		?int $limit = null,
 		?int $offset = null,
+		bool $sortByFilesCount = false,
+		bool $sortDescending = false,
+		?string $filterId = null,
 	): array {
+		[$groupIdFrom, $groupIdTo] = $this->parseGroupIdFilter($filterId);
 		return array_map(function ($d) {
 			$d['files'] = explode(',', $d['files']);
 			$d['filessizes'] = explode(',', $d['filessizes']);
@@ -958,8 +962,22 @@ class CollectorService {
 				];
 			}
 			unset($d['filessizes']);
+			unset($d['filescount']);
 			return $d;
-		}, $this->tasksDetailsMapper->findAllByIdGroupped($taskId, $limit, $offset));
+		}, $this->tasksDetailsMapper->findAllByIdGroupped(
+			$taskId,
+			$limit,
+			$offset,
+			$groupIdFrom,
+			$groupIdTo,
+			$sortByFilesCount,
+			$sortDescending,
+		));
+	}
+
+	public function detailsTotal(int $taskId, ?string $filterId = null): int {
+		[$groupIdFrom, $groupIdTo] = $this->parseGroupIdFilter($filterId);
+		return $this->tasksDetailsMapper->countGroupsByTaskId($taskId, $groupIdFrom, $groupIdTo);
 	}
 
 	/**
@@ -1011,6 +1029,28 @@ class CollectorService {
 			];
 		}
 		return null;
+	}
+
+	/**
+	 * @return array{0: int|null, 1: int|null}
+	 */
+	private function parseGroupIdFilter(?string $filterId): array {
+		if ($filterId === null || $filterId === '') {
+			return [null, null];
+		}
+
+		if (preg_match('/^\d+$/', $filterId) === 1) {
+			$groupId = intval($filterId);
+			return [$groupId, $groupId];
+		}
+
+		if (preg_match('/^(\d+)-(\d+)$/', $filterId, $matches) === 1) {
+			$from = intval($matches[1]);
+			$to = intval($matches[2]);
+			return $from <= $to ? [$from, $to] : [$to, $from];
+		}
+
+		return [null, null];
 	}
 
 	/**

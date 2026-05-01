@@ -24,7 +24,7 @@
 
 <template>
 	<div class="pagination">
-		<NcButton v-if="details.length > itemsPerPage"
+		<NcButton v-if="totalGroups > itemsPerPage"
 			type="tertiary"
 			:aria-label="t('mediadc', 'Previous duplicate list page')"
 			@click="prevGroupsPage">
@@ -32,9 +32,9 @@
 				<span class="icon-view-previous pagination-button" />
 			</template>
 		</NcButton>
-		<span v-if="details.length > itemsPerPage" style="margin-left: 5px;">{{ t('mediadc', 'Page:') }}&nbsp;</span>
-		<span v-if="details.length > itemsPerPage" style="margin-right: 5px;">{{ page + 1 }}/{{ Math.ceil(details.length / itemsPerPage) }}</span>
-		<NcButton v-if="details.length > itemsPerPage"
+		<span v-if="totalGroups > itemsPerPage" style="margin-left: 5px;">{{ t('mediadc', 'Page:') }}&nbsp;</span>
+		<span v-if="totalGroups > itemsPerPage" style="margin-right: 5px;">{{ page + 1 }}/{{ Math.ceil(totalGroups / itemsPerPage) }}</span>
+		<NcButton v-if="totalGroups > itemsPerPage"
 			type="tertiary"
 			:aria-label="t('mediadc', 'Next duplicate list page')"
 			@click="nextGroupsPage">
@@ -42,7 +42,7 @@
 				<span class="icon-view-next pagination-button" />
 			</template>
 		</NcButton>
-		<template v-if="details.length > itemsPerPage">
+		<template v-if="totalGroups > itemsPerPage">
 			<input id="go_to_page"
 				v-model="goToPage"
 				type="number"
@@ -73,8 +73,8 @@ export default {
 		NcButton,
 	},
 	props: {
-		details: {
-			type: Array,
+		totalGroups: {
+			type: Number,
 			required: true,
 		},
 		prevGroupsPage: {
@@ -100,7 +100,7 @@ export default {
 			'itemsPerPage',
 		]),
 		pagesRange() {
-			return Array.from({ length: Math.ceil(this.details.length / this.itemsPerPage) }, (_, i) => i)
+			return Array.from({ length: Math.ceil(this.totalGroups / this.itemsPerPage) }, (_, i) => i)
 		},
 	},
 	methods: {

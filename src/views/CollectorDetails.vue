@@ -258,8 +258,7 @@ export default {
 		unsubscribe('restartTask', this.onRestartTaskEvent)
 		this.$store.commit('setTask', {})
 		this.$store.commit('setTaskInfo', { exclude_directories: [], target_directories: [] })
-		this.$store.commit('setDetails', [])
-		this.$store.commit('setDetailsInfo', { filestotal: 0, filessize: 0 })
+		this.$store.commit('resetDetailsState')
 	},
 	methods: {
 		...mapActions([

@@ -117,17 +117,33 @@ class CollectorController extends Controller {
 
 	#[NoAdminRequired]
 	#[NoCSRFRequired]
-	public function details(int $taskId, ?int $limit = null, ?int $page = null, array $filter = []): JSONResponse {
+	public function details(int $taskId): JSONResponse {
 		/** @var CollectorTask */
 		$collectorTask = $this->service->getCollectorTask($taskId);
 		if ($collectorTask instanceof CollectorTask) {
+			$limit = max(1, intval($this->request->getParam('limit', 5)));
+			$page = max(0, intval($this->request->getParam('page', 0)));
+			$sortGroups = filter_var($this->request->getParam('sortGroups', false), FILTER_VALIDATE_BOOLEAN);
+			$sorted = filter_var($this->request->getParam('sorted', false), FILTER_VALIDATE_BOOLEAN);
+			$filterId = $this->request->getParam('filterId');
 			$offset = $page * $limit;
-			$collectorTaskDetails = $this->service->details($taskId, $limit, $offset);
+			$collectorTaskDetails = $this->service->details(
+				$taskId,
+				$limit,
+				$offset,
+				$sortGroups,
+				$sorted,
+				is_string($filterId) ? trim($filterId) : null,
+			);
 			return new JSONResponse([
 				'id' => $taskId,
 				'success' => $taskId === intval($collectorTask->getId()),
 				'collectorTask' => $collectorTask,
-				'collectorTaskDetails' => $collectorTaskDetails
+				'collectorTaskDetails' => $collectorTaskDetails,
+				'collectorTaskDetailsTotal' => $this->service->detailsTotal(
+					$taskId,
+					is_string($filterId) ? trim($filterId) : null,
+				),
 			], Http::STATUS_OK);
 		} else {
 			return new JSONResponse([
