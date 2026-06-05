@@ -195,6 +195,70 @@ class CollectorTaskDetailMapper extends QBMapper {
 		return $row === false ? 0 : intval($row['total']);
 	}
 
+	public function findExactMatchGroupIds(
+		int $taskId,
+		?int $groupIdFrom = null,
+		?int $groupIdTo = null,
+	): array {
+		$qb = $this->db->getQueryBuilder();
+		$photosTable = Application::APP_ID . '_photos';
+		$videosTable = Application::APP_ID . '_videos';
+		$mediaTypeExpr = "CASE "
+			. "WHEN mdc_photos.fileid IS NOT NULL THEN 'photo' "
+			. "WHEN mdc_videos.fileid IS NOT NULL THEN 'video' "
+			. "ELSE 'missing' END";
+		$hashExpr = 'CASE '
+			. 'WHEN mdc_photos.fileid IS NOT NULL THEN mdc_photos.hash '
+			. 'ELSE mdc_videos.hash END';
+		$missingHashExpr = 'SUM(CASE '
+			. 'WHEN mdc_photos.fileid IS NULL AND mdc_videos.fileid IS NULL THEN 1 '
+			. 'ELSE 0 END)';
+		$skippedHashExpr = 'SUM(CASE '
+			. 'WHEN (mdc_photos.fileid IS NOT NULL AND mdc_photos.skipped <> 0) '
+			. 'OR (mdc_videos.fileid IS NOT NULL AND mdc_videos.skipped <> 0) THEN 1 '
+			. 'ELSE 0 END)';
+
+		$qb->select('mdc_t_d.group_id')
+			->from($this->tableName, 'mdc_t_d')
+			->innerJoin('mdc_t_d', 'filecache', 'ocf', 'ocf.fileid=mdc_t_d.fileid')
+			->leftJoin('mdc_t_d', $photosTable, 'mdc_photos', 'mdc_photos.fileid=mdc_t_d.fileid')
+			->leftJoin('mdc_t_d', $videosTable, 'mdc_videos', 'mdc_videos.fileid=mdc_t_d.fileid')
+			->where($qb->expr()->eq('mdc_t_d.task_id', $qb->createNamedParameter($taskId, IQueryBuilder::PARAM_INT)))
+			->groupBy('mdc_t_d.task_id', 'mdc_t_d.group_id');
+
+		$this->applyGroupIdFilter($qb, $groupIdFrom, $groupIdTo);
+
+		$qb->having(
+			$qb->expr()->gt($qb->createFunction('COUNT(ocf.fileid)'), $qb->createNamedParameter(1, IQueryBuilder::PARAM_INT))
+		)
+			->andHaving(
+				$qb->expr()->eq($qb->createFunction('MIN(ocf.size)'), $qb->createFunction('MAX(ocf.size)'))
+			)
+			->andHaving(
+				$qb->expr()->eq(
+					$qb->createFunction("COUNT(DISTINCT {$mediaTypeExpr})"),
+					$qb->createNamedParameter(1, IQueryBuilder::PARAM_INT)
+				)
+			)
+			->andHaving(
+				$qb->expr()->eq(
+					$qb->createFunction("COUNT(DISTINCT {$hashExpr})"),
+					$qb->createNamedParameter(1, IQueryBuilder::PARAM_INT)
+				)
+			)
+			->andHaving(
+				$qb->expr()->eq($qb->createFunction($missingHashExpr), $qb->createNamedParameter(0, IQueryBuilder::PARAM_INT))
+			)
+			->andHaving(
+				$qb->expr()->eq($qb->createFunction($skippedHashExpr), $qb->createNamedParameter(0, IQueryBuilder::PARAM_INT))
+			)
+			->orderBy('mdc_t_d.group_id', 'ASC');
+
+		return array_map(static function (array $row) {
+			return intval($row['group_id']);
+		}, $qb->executeQuery()->fetchAll());
+	}
+
 	/**
 	 * @param int $taskId
 	 * @param int $limit

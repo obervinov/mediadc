@@ -80,6 +80,22 @@
 							{{ t('mediadc', 'Toggle groups') }}
 						</template>
 					</NcButton>
+					<NcButton v-tooltip="{ content: t('mediadc', 'Delete groups where every file has the same stored hash and size'), placement: 'top' }"
+						type="primary"
+						:aria-label="t('mediadc', 'Delete exact hash and size matches')"
+						:disabled="exactDeleting"
+						style="margin-right: 10px;"
+						@click="deleteExactGroups">
+						<template v-if="!exactDeleting" #icon>
+							<span class="icon-delete" />
+						</template>
+						<template v-else #icon>
+							<NcLoadingIcon :size="20" />
+						</template>
+						<template #default>
+							{{ t('mediadc', 'Delete exact matches') }}
+						</template>
+					</NcButton>
 					<div v-if="checkedDetailGroups.length > 0" class="batch-editing">
 						{{ n('mediadc', 'Batch actions for %n group', 'Batch actions for %n groups', checkedDetailGroups.length) }}
 						<NcActions placement="top" style="margin-left: 5px;">
@@ -188,6 +204,7 @@ export default {
 			batchActionsOpened: false,
 			sortGroups: true,
 			batchDeleting: false,
+			exactDeleting: false,
 		}
 	},
 	computed: {
@@ -342,6 +359,46 @@ export default {
 				showError(this.t('mediadc', 'A server error occurred'))
 				console.debug(err)
 				this.batchDeleting = false
+			})
+		},
+		deleteExactGroups() {
+			OC.dialogs.confirm(
+				this.t('mediadc', 'Delete duplicate groups where every file has the same stored hash and file size? One file per group will be kept.'),
+				this.t('mediadc', 'Confirm exact duplicate deletion'),
+				(success) => {
+					if (success) {
+						this._deleteExactGroups()
+					}
+				},
+			)
+		},
+		_deleteExactGroups() {
+			this.exactDeleting = true
+			axios.post(generateUrl(`/apps/mediadc/api/v1/tasks/${this.task.id}/details/delete-exact`), {
+				filterId: this.detailsFilterId !== '' ? this.detailsFilterId : null,
+			}).then(async (res) => {
+				if (res.data.removedGroupIds?.length > 0) {
+					const removedGroupIds = new Set(res.data.removedGroupIds.map(Number))
+					this.checkedDetailGroups = this.checkedDetailGroups.filter(detail => !removedGroupIds.has(Number(detail.group_id)))
+					emit('updateTaskInfo')
+					await this.fetchDetails()
+					await this.$store.dispatch('getDetailFilesTotalSize')
+					this.$store.commit('setTask', res.data.task)
+					if (res.data.partialGroupIds?.length > 0) {
+						showWarning(this.t('mediadc', 'Deleted exact matches, but some groups were only partially processed'))
+					} else {
+						showSuccess(this.t('mediadc', 'Exact match groups successfully deleted'))
+					}
+				} else if (res.data.eligibleGroupIds?.length === 0) {
+					showWarning(this.t('mediadc', 'No exact hash and size matches found'))
+				} else {
+					showError(this.t('mediadc', 'Failed to delete exact match groups'))
+				}
+				this.exactDeleting = false
+			}).catch(err => {
+				showError(this.t('mediadc', 'A server error occurred'))
+				console.debug(err)
+				this.exactDeleting = false
 			})
 		},
 		selectAllGroups() {

@@ -65,6 +65,7 @@ return [
 		// BATCH ACTIONS API
 		['name' => 'collector#removeTaskDetailGroups', 'url' => '/api/v1/tasks/{taskId}/details/remove', 'verb' => 'POST'],
 		['name' => 'collector#deleteTaskDetailGroupsFiles', 'url' => '/api/v1/tasks/{taskId}/details/delete', 'verb' => 'POST'],
+		['name' => 'collector#deleteExactTaskDetailGroupsFiles', 'url' => '/api/v1/tasks/{taskId}/details/delete-exact', 'verb' => 'POST'],
 		['name' => 'collector#removeTaskDetailFiles', 'url' => '/api/v1/tasks/{taskId}/files/{groupId}/remove', 'verb' => 'POST'],
 		['name' => 'collector#deleteTaskDetailFiles', 'url' => '/api/v1/tasks/{taskId}/files/{groupId}/delete', 'verb' => 'POST'],
 	]

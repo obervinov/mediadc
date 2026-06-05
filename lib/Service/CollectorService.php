@@ -845,6 +845,62 @@ class CollectorService {
 		];
 	}
 
+	public function deleteExactTaskDetailGroupsFiles(int $taskId, ?string $filterId = null): array {
+		[$groupIdFrom, $groupIdTo] = $this->parseGroupIdFilter($filterId);
+		$eligibleGroupIds = $this->tasksDetailsMapper->findExactMatchGroupIds($taskId, $groupIdFrom, $groupIdTo);
+		$removedGroupIds = [];
+		$partialGroupIds = [];
+		$errors = [
+			'locked' => [],
+			'not_permitted' => [],
+			'not_found' => [],
+		];
+
+		foreach ($eligibleGroupIds as $groupId) {
+			$groupFiles = $this->tasksDetailsMapper->findAllByGroupId($taskId, $groupId);
+			if (count($groupFiles) < 2) {
+				continue;
+			}
+			sort($groupFiles, SORT_NUMERIC);
+
+			$keeperFileId = array_shift($groupFiles);
+			$groupCompleted = true;
+			foreach ($groupFiles as $fileId) {
+				$deleteFileResult = $this->deleteTaskDetailFile($taskId, $groupId, $fileId, false);
+				if (!$deleteFileResult['success']) {
+					$groupCompleted = false;
+					if (!empty($deleteFileResult['locked'])) {
+						$errors['locked'][] = $fileId;
+					}
+					if (!empty($deleteFileResult['not_permitted'])) {
+						$errors['not_permitted'][] = $fileId;
+					}
+					if (!empty($deleteFileResult['not_found'])) {
+						$errors['not_found'][] = $fileId;
+					}
+				}
+			}
+
+			if ($groupCompleted) {
+				$this->tasksDetailsMapper->deleteGroupFiles($taskId, $groupId, [$keeperFileId]);
+				$this->markResolvedPhoto($keeperFileId, true);
+				$this->markResolvedVideo($keeperFileId, true);
+				$removedGroupIds[] = intval($groupId);
+			} else {
+				$partialGroupIds[] = intval($groupId);
+			}
+		}
+
+		return [
+			'success' => count($removedGroupIds) === count($eligibleGroupIds),
+			'eligibleGroupIds' => $eligibleGroupIds,
+			'removedGroupIds' => $removedGroupIds,
+			'partialGroupIds' => $partialGroupIds,
+			'task' => $this->tasksMapper->find($taskId),
+			'errors' => $errors,
+		];
+	}
+
 	/**
 	 * Delete CollectorTaskDetail groups with deleting corresponding files
 	 *

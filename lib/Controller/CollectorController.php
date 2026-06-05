@@ -284,6 +284,14 @@ class CollectorController extends Controller {
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 */
+	public function deleteExactTaskDetailGroupsFiles(int $taskId, ?string $filterId = null): JSONResponse {
+		return new JSONResponse($this->service->deleteExactTaskDetailGroupsFiles($taskId, $filterId), Http::STATUS_OK);
+	}
+
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
 	public function deleteTaskDetailFiles(int $taskId, int $groupId, array $fileIds): JSONResponse {
 		return new JSONResponse($this->service->deleteTaskDetailFiles($taskId, $groupId, $fileIds), Http::STATUS_OK);
 	}

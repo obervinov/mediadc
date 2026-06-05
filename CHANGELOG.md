@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.4 - 2026-06-05]
+
+Maintenance update.
+
+### Added
+
+- Added bulk deletion for duplicate groups where all files share the same stored hash and file size
+
+### Changed
+
+- Bumped app version for Nextcloud asset invalidation
+
 ## [0.4.0 - 2024-10-21]
 
 Maintenance update. Update NC versions to support NC30+ only.
