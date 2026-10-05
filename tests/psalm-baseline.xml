@@ -44,6 +44,10 @@
     <MismatchingDocblockReturnType>
       <code><![CDATA[array|bool]]></code>
     </MismatchingDocblockReturnType>
+    <MissingDependency>
+      <code><![CDATA[$rootFolder]]></code>
+      <code><![CDATA[IRootFolder]]></code>
+    </MissingDependency>
     <RedundantCondition>
       <code><![CDATA[$createdTask !== null]]></code>
     </RedundantCondition>
@@ -56,6 +60,11 @@
     </UndefinedClass>
   </file>
   <file src="lib/Service/PhotosService.php">
+    <MissingDependency>
+      <code><![CDATA[$this->rootFolder]]></code>
+      <code><![CDATA[$this->rootFolder]]></code>
+      <code><![CDATA[private]]></code>
+    </MissingDependency>
     <RedundantCondition>
       <code><![CDATA[isset($offset)]]></code>
     </RedundantCondition>
@@ -74,11 +83,7 @@
       <code><![CDATA[$output[0]]]></code>
       <code><![CDATA[$output[0]]]></code>
     </InvalidArrayAccess>
-    <NoValue>
-      <code><![CDATA[$basename]]></code>
-    </NoValue>
     <RedundantCondition>
-      <code><![CDATA[$basename === 'php']]></code>
       <code><![CDATA[isset($setting)]]></code>
     </RedundantCondition>
     <UndefinedClass>
@@ -93,6 +98,11 @@
     </MismatchingDocblockReturnType>
   </file>
   <file src="lib/Service/VideosService.php">
+    <MissingDependency>
+      <code><![CDATA[$this->rootFolder]]></code>
+      <code><![CDATA[$this->rootFolder]]></code>
+      <code><![CDATA[private]]></code>
+    </MissingDependency>
     <RedundantCondition>
       <code><![CDATA[isset($offset)]]></code>
     </RedundantCondition>

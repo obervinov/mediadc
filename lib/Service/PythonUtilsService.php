@@ -98,6 +98,7 @@ class PythonUtilsService {
 			return $cachedExecutable;
 		}
 
+		/** @var string $basename PHP_BINARY is inferred per analysing PHP version */
 		$basename = basename(PHP_BINARY);
 
 		// If the binary is 'php', 'php7', 'php7.3' etc, then assume it's a usable interpreter
