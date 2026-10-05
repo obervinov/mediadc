@@ -29,8 +29,6 @@ declare(strict_types=1);
 namespace OCA\MediaDC\Service;
 
 use DOMDocument;
-use OCA\Cloud_Py_API\Service\PythonService;
-use OCA\Cloud_Py_API\Service\UtilsService as CPAUtilsService;
 use OCA\Files_Sharing\SharedStorage;
 use OCA\MediaDC\AppInfo\Application;
 use OCA\MediaDC\BackgroundJob\QueuedTaskJob;
@@ -81,7 +79,7 @@ class CollectorService {
 		private readonly VideosService $videosService,
 		private readonly IJobList $jobList,
 		private readonly IPreview $previewManager,
-		private readonly CPAUtilsService $cpaUtils,
+		private readonly PythonUtilsService $pythonUtils,
 		private readonly IL10N $l10n,
 		IConfig $config,
 	) {
@@ -109,16 +107,16 @@ class CollectorService {
 			if ($createdTask !== null) {
 				if (json_decode($pythonBinary->getValue())) {
 					$scriptName = 'binaries/' . Application::APP_ID
-						. '_' . $this->cpaUtils->getBinaryName() . '/main';
+						. '_' . $this->pythonUtils->getBinaryName() . '/main';
 				} else {
 					$scriptName = 'main.py';
 				}
-				if ($this->cpaUtils->isFunctionEnabled('exec')) {
+				if ($this->pythonUtils->isFunctionEnabled('exec')) {
 					if ($this->isObjectStore) {
-						$result = $this->cpaUtils->prefetchAppDataFile(
+						$result = $this->pythonUtils->prefetchAppDataFile(
 							Application::APP_ID,
 							'binaries',
-							Application::APP_ID . '_' . $this->cpaUtils->getBinaryName() . '.tar.gz'
+							Application::APP_ID . '_' . $this->pythonUtils->getBinaryName() . '.tar.gz'
 						);
 						if (!$result) {
 							$this->logger->error('[' . self::class . '] Task run error: Can\'t prefetch Python binary');
@@ -130,12 +128,12 @@ class CollectorService {
 					$this->pythonService->run(Application::APP_ID, $scriptName, [
 						'-t' => $createdTask->getId()
 					], true, [
-						'PHP_PATH' => $this->cpaUtils->getPhpInterpreter(),
-						'SERVER_ROOT' => !$this->cpaUtils->isSnapEnv() ? \OC::$SERVERROOT : '',
-						'IS_SNAP_ENV' => $this->cpaUtils->isSnapEnv(),
+						'PHP_PATH' => $this->pythonUtils->getPhpInterpreter(),
+						'SERVER_ROOT' => !$this->pythonUtils->isSnapEnv() ? \OC::$SERVERROOT : '',
+						'IS_SNAP_ENV' => $this->pythonUtils->isSnapEnv(),
 						'USER_ID' => $this->userId,
-						'LOGLEVEL' => $this->cpaUtils->getNCLogLevel(),
-						'CPA_LOGLEVEL' => $this->cpaUtils->getCpaLogLevel()
+						'LOGLEVEL' => $this->pythonUtils->getNCLogLevel(),
+						'CPA_LOGLEVEL' => $this->pythonUtils->getCpaLogLevel()
 					], true);
 				} else {
 					$this->logger->error('[' . self::class . '] Task run error: PHP `exec` function is not available');
@@ -182,7 +180,7 @@ class CollectorService {
 		$pythonBinary = $this->settingsMapper->findByName('python_binary');
 		if (json_decode($pythonBinary->getValue())) {
 			$scriptName = 'binaries/' . Application::APP_ID
-				. '_' . $this->cpaUtils->getBinaryName() . '/main';
+				. '_' . $this->pythonUtils->getBinaryName() . '/main';
 		} else {
 			$scriptName = 'main.py';
 		}
@@ -227,12 +225,12 @@ class CollectorService {
 				&& count($processesRunning) < (int)$pyLimitSetting->getValue() && !$empty) {
 				$collectorTask = $this->tasksMapper->update($collectorTask);
 				$this->deleteTaskDetails($taskId);
-				if ($this->cpaUtils->isFunctionEnabled('exec')) {
+				if ($this->pythonUtils->isFunctionEnabled('exec')) {
 					if ($this->isObjectStore) {
-						$result = $this->cpaUtils->prefetchAppDataFile(
+						$result = $this->pythonUtils->prefetchAppDataFile(
 							Application::APP_ID,
 							'binaries',
-							Application::APP_ID . '_' . $this->cpaUtils->getBinaryName() . '.tar.gz'
+							Application::APP_ID . '_' . $this->pythonUtils->getBinaryName() . '.tar.gz'
 						);
 						if (!$result) {
 							$this->logger->error('[' . self::class . '] Task run error: Can\'t prefetch Python binary');
@@ -243,12 +241,12 @@ class CollectorService {
 					}
 					$this->pythonService->run(Application::APP_ID,
 						$scriptName, ['-t' => $taskId], true, [
-							'PHP_PATH' => $this->cpaUtils->getPhpInterpreter(),
-							'SERVER_ROOT' => !$this->cpaUtils->isSnapEnv() ? \OC::$SERVERROOT : '',
-							'IS_SNAP_ENV' => $this->cpaUtils->isSnapEnv(),
+							'PHP_PATH' => $this->pythonUtils->getPhpInterpreter(),
+							'SERVER_ROOT' => !$this->pythonUtils->isSnapEnv() ? \OC::$SERVERROOT : '',
+							'IS_SNAP_ENV' => $this->pythonUtils->isSnapEnv(),
 							'USER_ID' => $this->userId,
-							'LOGLEVEL' => $this->cpaUtils->getNCLogLevel(),
-							'CPA_LOGLEVEL' => $this->cpaUtils->getCpaLogLevel()
+							'LOGLEVEL' => $this->pythonUtils->getNCLogLevel(),
+							'CPA_LOGLEVEL' => $this->pythonUtils->getCpaLogLevel()
 						], json_decode($pythonBinary->getValue()));
 				} else {
 					$this->logger->error('[' . self::class . '] Task run error: PHP `exec` function is not available');
@@ -264,15 +262,15 @@ class CollectorService {
 		} else {
 			$this->tasksMapper->update($collectorTask);
 			$this->deleteTaskDetails($taskId);
-			if ($this->cpaUtils->isFunctionEnabled('exec')) {
+			if ($this->pythonUtils->isFunctionEnabled('exec')) {
 				$this->pythonService->run(Application::APP_ID,
 					$scriptName, ['-t' => $taskId], true, [
-						'PHP_PATH' => $this->cpaUtils->getPhpInterpreter(),
-						'SERVER_ROOT' => !$this->cpaUtils->isSnapEnv() ? \OC::$SERVERROOT : '',
-						'IS_SNAP_ENV' => $this->cpaUtils->isSnapEnv(),
+						'PHP_PATH' => $this->pythonUtils->getPhpInterpreter(),
+						'SERVER_ROOT' => !$this->pythonUtils->isSnapEnv() ? \OC::$SERVERROOT : '',
+						'IS_SNAP_ENV' => $this->pythonUtils->isSnapEnv(),
 						'USER_ID' => $this->userId,
-						'LOGLEVEL' => $this->cpaUtils->getNCLogLevel(),
-						'CPA_LOGLEVEL' => $this->cpaUtils->getCpaLogLevel()
+						'LOGLEVEL' => $this->pythonUtils->getNCLogLevel(),
+						'CPA_LOGLEVEL' => $this->pythonUtils->getCpaLogLevel()
 					], json_decode($pythonBinary->getValue()));
 			} else {
 				$this->logger->error('[' . self::class . '] Task run error: PHP `exec` function is not available');

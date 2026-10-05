@@ -15,8 +15,6 @@ Unfortunately, we no longer have the capacity to maintain this repository, and i
 
 **📸📹 Collect photo and video duplicates to save your cloud storage space**
 
-**[cloud_py_api](https://apps.nextcloud.com/apps/cloud_py_api)** required to be installed and enabled first.
-
 | **Not working on FreeBSD systems for now**
 
 ![Home page](/screenshots/mediadc_home.png)
@@ -31,7 +29,7 @@ Nextcloud Media Duplicate Collector application
 
 ## 🚀 Installation
 
-First of all, in you Nextcloud install and enable [`cloud_py_api`](https://apps.nextcloud.com/apps/cloud_py_api) through the Apps management, then install MediaDC app.
+The Python framework part of the archived [`cloud_py_api`](https://github.com/cloud-py-api/cloud_py_api) app is bundled into MediaDC since 0.5.0, so it no longer has to be installed separately.
 Starting from 0.2.0 version MediaDC is only included in Nextcloud v25 and higher.
 #### Read more on [Wiki page](https://github.com/cloud-py-api/mediadc/wiki)
 

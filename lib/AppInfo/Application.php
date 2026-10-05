@@ -40,6 +40,11 @@ use OCP\AppFramework\Bootstrap\IRegistrationContext;
 
 class Application extends App implements IBootstrap {
 	public const APP_ID = 'mediadc';
+	/**
+	 * Upstream release whose pre-compiled Python binaries are used.
+	 * The fork does not publish binaries, and its Python part is unchanged since v0.4.0.
+	 */
+	public const PYTHON_BINARY_VERSION = '0.4.0';
 
 	public function __construct() {
 		parent::__construct(self::APP_ID);

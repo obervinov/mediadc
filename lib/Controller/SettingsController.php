@@ -28,9 +28,9 @@ declare(strict_types=1);
 
 namespace OCA\MediaDC\Controller;
 
-use OCA\Cloud_Py_API\Service\UtilsService;
 use OCA\MediaDC\AppInfo\Application;
 use OCA\MediaDC\Service\PhotosService;
+use OCA\MediaDC\Service\PythonUtilsService;
 use OCA\MediaDC\Service\SettingsService;
 use OCA\MediaDC\Service\VideosService;
 use OCP\AppFramework\Controller;
@@ -48,7 +48,7 @@ class SettingsController extends Controller {
 		private readonly SettingsService $service,
 		private readonly PhotosService $photosService,
 		private readonly VideosService $videosService,
-		private readonly UtilsService $cpaUtils,
+		private readonly PythonUtilsService $pythonUtils,
 	) {
 		parent::__construct(Application::APP_ID, $request);
 	}
@@ -100,6 +100,6 @@ class SettingsController extends Controller {
 
 	#[NoCSRFRequired]
 	public function systemInfo(): JSONResponse {
-		return new JSONResponse($this->cpaUtils->getSystemInfo(Application::APP_ID), Http::STATUS_OK);
+		return new JSONResponse($this->pythonUtils->getSystemInfo(Application::APP_ID), Http::STATUS_OK);
 	}
 }
