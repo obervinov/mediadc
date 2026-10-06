@@ -26,7 +26,6 @@ If applicable, add screenshots to help explain your problem.
  - Database configuration [e.g. mysql 8.0.27, without sensitive information]
  - Python version [e.g. 3.9.1] (if used Python sources instead of binaries)
  - MediaDC version [e.g. 0.3.0]
- - `cloud_py_api` version [e.g. 0.1.0]
 
 **Additional context**
 Add any other context about the problem here.

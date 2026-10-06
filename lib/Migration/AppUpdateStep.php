@@ -28,22 +28,19 @@ declare(strict_types=1);
 
 namespace OCA\MediaDC\Migration;
 
-use OCA\Cloud_Py_API\Service\UtilsService as CPAUtilsService;
 use OCA\MediaDC\AppInfo\Application;
 use OCA\MediaDC\Migration\data\AppInitialData;
-
+use OCA\MediaDC\Migration\data\PythonSettingsInitialData;
 use OCA\MediaDC\Service\AppDataService;
-
+use OCA\MediaDC\Service\PythonUtilsService;
 use OCA\MediaDC\Service\UtilsService;
-use OCP\App\IAppManager;
 use OCP\Migration\IOutput;
 use OCP\Migration\IRepairStep;
 
 class AppUpdateStep implements IRepairStep {
 	public function __construct(
-		private readonly IAppManager $appManager,
 		private readonly UtilsService $utils,
-		private readonly CPAUtilsService $cpaUtils,
+		private readonly PythonUtilsService $pythonUtils,
 		private readonly AppDataService $appDataService,
 	) {
 	}
@@ -56,19 +53,20 @@ class AppUpdateStep implements IRepairStep {
 		$output->startProgress(2);
 		$output->advance(1, 'Sync settings changes');
 		$this->utils->checkForSettingsUpdates(AppInitialData::$APP_INITIAL_DATA);
+		$this->pythonUtils->ensureSettings(PythonSettingsInitialData::$PYTHON_SETTINGS_INITIAL_DATA);
 		$output->advance(1, 'Update binaries (downloading pre-compiled binaries for this release)');
 		$output->warning('This step may take some time');
 		$this->appDataService->createAppDataFolder('binaries');
 		$this->appDataService->createAppDataFolder('logs');
-		$version = $this->appManager->getAppVersion(Application::APP_ID, false);
 		$url = 'https://github.com/cloud-py-api/mediadc/releases/download/v'
-			. $version
-			. '/' . Application::APP_ID . '_' . $this->cpaUtils->getBinaryName() . '.tar.gz';
-		$result = $this->cpaUtils->downloadPythonBinaryDir(
+			. Application::PYTHON_BINARY_VERSION
+			. '/' . Application::APP_ID . '_' . $this->pythonUtils->getBinaryName() . '.tar.gz';
+		$result = $this->pythonUtils->downloadPythonBinaryDir(
 			$url, $this->appDataService->getAppDataFolder('binaries'),
 			Application::APP_ID,
-			Application::APP_ID . '_' . $this->cpaUtils->getBinaryName(),
-			true
+			Application::APP_ID . '_' . $this->pythonUtils->getBinaryName(),
+			true,
+			Application::PYTHON_BINARY_SHA256[$this->pythonUtils->getBinaryName()]
 		);
 		if (!isset($result['downloaded']) || !$result['downloaded']) {
 			$output->warning('Failed to download app Python binary');

@@ -15,16 +15,15 @@
       <code><![CDATA[Command]]></code>
     </UndefinedClass>
   </file>
+  <file src="lib/Command/GetFileContentsCommand.php">
+    <UndefinedClass>
+      <code><![CDATA[Command]]></code>
+    </UndefinedClass>
+  </file>
   <file src="lib/Controller/PageController.php">
     <UndefinedClass>
       <code><![CDATA[LoadSidebar]]></code>
       <code><![CDATA[LoadViewer]]></code>
-    </UndefinedClass>
-  </file>
-  <file src="lib/Controller/SettingsController.php">
-    <UndefinedClass>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[private]]></code>
     </UndefinedClass>
   </file>
   <file src="lib/Db/CollectorTaskDetailMapper.php">
@@ -39,22 +38,6 @@
     </MissingTemplateParam>
     <UndefinedClass>
       <code><![CDATA[LoadAdditionalScriptsEvent]]></code>
-    </UndefinedClass>
-  </file>
-  <file src="lib/Migration/AppDataInitializationStep.php">
-    <UndefinedClass>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[private]]></code>
-    </UndefinedClass>
-  </file>
-  <file src="lib/Migration/AppUpdateStep.php">
-    <UndefinedClass>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[private]]></code>
     </UndefinedClass>
   </file>
   <file src="lib/Service/CollectorService.php">
@@ -72,37 +55,8 @@
       <code><![CDATA[count($params) === 0]]></code>
     </TypeDoesNotContainType>
     <UndefinedClass>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->cpaUtils]]></code>
-      <code><![CDATA[$this->pythonService]]></code>
-      <code><![CDATA[$this->pythonService]]></code>
-      <code><![CDATA[$this->pythonService]]></code>
       <code><![CDATA[SharedStorage]]></code>
       <code><![CDATA[\OCA\GroupFolders\Mount\GroupFolderStorage]]></code>
-      <code><![CDATA[private]]></code>
-      <code><![CDATA[private]]></code>
     </UndefinedClass>
   </file>
   <file src="lib/Service/PhotosService.php">
@@ -117,6 +71,26 @@
     <TypeDoesNotContainNull>
       <code><![CDATA[0]]></code>
     </TypeDoesNotContainNull>
+  </file>
+  <file src="lib/Service/PythonService.php">
+    <InvalidArrayAccess>
+      <code><![CDATA[$output[0]]]></code>
+      <code><![CDATA[$output[0]]]></code>
+    </InvalidArrayAccess>
+  </file>
+  <file src="lib/Service/PythonUtilsService.php">
+    <InvalidArrayAccess>
+      <code><![CDATA[$output[0]]]></code>
+      <code><![CDATA[$output[0]]]></code>
+    </InvalidArrayAccess>
+    <RedundantCondition>
+      <code><![CDATA[isset($setting)]]></code>
+    </RedundantCondition>
+    <UndefinedClass>
+      <code><![CDATA[$this->databaseStatistics]]></code>
+      <code><![CDATA[TAR]]></code>
+      <code><![CDATA[private]]></code>
+    </UndefinedClass>
   </file>
   <file src="lib/Service/SettingsService.php">
     <MismatchingDocblockReturnType>

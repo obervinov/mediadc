@@ -203,7 +203,7 @@ class CollectorTaskDetailMapper extends QBMapper {
 		$qb = $this->db->getQueryBuilder();
 		$photosTable = Application::APP_ID . '_photos';
 		$videosTable = Application::APP_ID . '_videos';
-		$mediaTypeExpr = "CASE "
+		$mediaTypeExpr = 'CASE '
 			. "WHEN mdc_photos.fileid IS NOT NULL THEN 'photo' "
 			. "WHEN mdc_videos.fileid IS NOT NULL THEN 'video' "
 			. "ELSE 'missing' END";
