@@ -86,7 +86,9 @@ class AppDataInitializationStep implements IRepairStep {
 		$result = $this->pythonUtils->downloadPythonBinaryDir(
 			$url, $this->appDataService->getAppDataFolder('binaries'),
 			Application::APP_ID,
-			Application::APP_ID . '_' . $this->pythonUtils->getBinaryName()
+			Application::APP_ID . '_' . $this->pythonUtils->getBinaryName(),
+			false,
+			Application::PYTHON_BINARY_SHA256[$this->pythonUtils->getBinaryName()]
 		);
 		if (!isset($result['downloaded']) || !$result['downloaded']) {
 			$output->warning('Failed to download app Python binary');

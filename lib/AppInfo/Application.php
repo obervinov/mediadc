@@ -45,6 +45,16 @@ class Application extends App implements IBootstrap {
 	 * The fork does not publish binaries, and its Python part is unchanged since v0.4.0.
 	 */
 	public const PYTHON_BINARY_VERSION = '0.4.0';
+	/**
+	 * Pinned sha256 of the PYTHON_BINARY_VERSION release archives, keyed by binary name.
+	 * Downloads that do not match are rejected before extraction.
+	 */
+	public const PYTHON_BINARY_SHA256 = [
+		'manylinux_amd64' => '9aac6576eadd6ef8240e4f418c80cefe054aee2bbe4a2a931053f5ff8494f24a',
+		'manylinux_arm64' => '75f13724a266f69b5af7a811d9f14e4f90b10ee21e1efc114ff182bd559b2da2',
+		'musllinux_amd64' => '7786357a084e180cda85b51498297f90095d01d8f3156ceb024d811e15f42ce2',
+		'musllinux_arm64' => '186692ba64b15c8fca1a2655911932d162b3822eb2ce2cbcd19fdc39946d2451',
+	];
 
 	public function __construct() {
 		parent::__construct(self::APP_ID);

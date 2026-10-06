@@ -340,6 +340,7 @@ class PythonUtilsService {
 	 * @param string $appId target Application::APP_ID
 	 * @param string $filename archive and extracted folder name
 	 * @param bool $update flag to determine whether to update already downloaded binary or not
+	 * @param string|null $expectedSha256 sha256 the downloaded archive must match before it is extracted
 	 *
 	 * @return array
 	 */
@@ -349,6 +350,7 @@ class PythonUtilsService {
 		string $appId,
 		string $filename = 'main',
 		bool $update = false,
+		?string $expectedSha256 = null,
 	): array {
 		$isObjectStore = $this->config->getSystemValue('objectstore', null) !== null;
 		if (isset($binariesFolder['success']) && $binariesFolder['success']) {
@@ -408,13 +410,24 @@ class PythonUtilsService {
 			$fp = fopen($save_file_loc, 'wb');
 			if ($fp) {
 				curl_setopt_array($cURL, [
-					CURLOPT_RETURNTRANSFER => true,
 					CURLOPT_FILE => $fp,
 					CURLOPT_FOLLOWLOCATION => true,
+					CURLOPT_FAILONERROR => true,
 				]);
-				curl_exec($cURL);
+				$downloaded = curl_exec($cURL);
+				$curlError = curl_error($cURL);
 				curl_close($cURL);
 				fclose($fp);
+				if ($downloaded === false) {
+					unlink($save_file_loc);
+					$this->logger->error('[' . self::class . '] Python binary download failed: ' . $curlError);
+					return ['downloaded' => false, 'error' => 'Python binary download failed'];
+				}
+				if ($expectedSha256 !== null && !hash_equals($expectedSha256, (string)hash_file('sha256', $save_file_loc))) {
+					unlink($save_file_loc);
+					$this->logger->error('[' . self::class . '] Python binary checksum mismatch: ' . $url);
+					return ['downloaded' => false, 'error' => 'Python binary checksum mismatch'];
+				}
 				$unpacked = $this->unTarGz($binariesFolder, $filename . '.tar.gz', $isObjectStore);
 				if ($isObjectStore) {
 					// Save binaries archive to AppData (object storage)
@@ -723,8 +736,7 @@ class PythonUtilsService {
 		$file_name = $binariesFolder['path'] . '/' .
 			str_replace('.gz', '', $file_name);
 		if (file_exists($file_name)) {
-			exec('chmod +x ' . $file_name, $output, $result_code);
-			return $result_code === 0;
+			return chmod($file_name, fileperms($file_name) | 0111);
 		}
 		return false;
 	}

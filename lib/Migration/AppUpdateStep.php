@@ -65,7 +65,8 @@ class AppUpdateStep implements IRepairStep {
 			$url, $this->appDataService->getAppDataFolder('binaries'),
 			Application::APP_ID,
 			Application::APP_ID . '_' . $this->pythonUtils->getBinaryName(),
-			true
+			true,
+			Application::PYTHON_BINARY_SHA256[$this->pythonUtils->getBinaryName()]
 		);
 		if (!isset($result['downloaded']) || !$result['downloaded']) {
 			$output->warning('Failed to download app Python binary');

@@ -92,15 +92,15 @@ class PythonService {
 		}
 		if (count($scriptParams) > 0) {
 			$params = array_map(function ($key, $value) {
-				return $value !== '' ? "$key $value " : "$key";
+				return $value !== '' ? $key . ' ' . escapeshellarg((string)$value) : $key;
 			}, array_keys($scriptParams), array_values($scriptParams));
-			$cmd = $cwd . $scriptName . ' ' . join(' ', $params);
+			$cmd = escapeshellarg($cwd . $scriptName) . ' ' . join(' ', $params);
 		} else {
-			$cmd = $cwd . $scriptName;
+			$cmd = escapeshellarg($cwd . $scriptName);
 		}
 		if (count($env) > 0) {
 			$envVariables = join(' ', array_map(function ($key, $value) {
-				return "$key=\"$value\" ";
+				return $key . '=' . escapeshellarg((string)$value) . ' ';
 			}, array_keys($env), array_values($env)));
 		} else {
 			$envVariables = '';
@@ -121,10 +121,11 @@ class PythonService {
 				}
 			} else {
 				$appDataDir = $this->ncDataFolder . '/appdata_' . $this->ncInstanceId . '/' . $appId . '/';
-				$pyBitecodeEnvVar = 'PYTHONBYTECODEBASE="' . $appDataDir . '" ';
+				$pyBitecodeEnvVar = 'PYTHONBYTECODEBASE=' . escapeshellarg($appDataDir) . ' ';
 				$envVariables = $pyBitecodeEnvVar . $envVariables;
 				$logFile = $appDataDir . 'logs/' . date('d-m-Y_H-i-s', time()) . '.log';
 			}
+			$logFile = escapeshellarg($logFile);
 			$cmd = $envVariables . 'nohup ' . $cmd . ' > ' . $logFile . ' 2>' . $logFile . ' &';
 			exec($cmd);
 		} else {
