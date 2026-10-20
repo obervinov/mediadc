@@ -20,6 +20,12 @@
       <code><![CDATA[Command]]></code>
     </UndefinedClass>
   </file>
+  <file src="lib/Controller/FoldersController.php">
+    <MissingDependency>
+      <code><![CDATA[$this->rootFolder]]></code>
+      <code><![CDATA[private]]></code>
+    </MissingDependency>
+  </file>
   <file src="lib/Controller/PageController.php">
     <UndefinedClass>
       <code><![CDATA[LoadSidebar]]></code>
