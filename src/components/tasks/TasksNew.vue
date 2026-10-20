@@ -196,10 +196,11 @@
 </template>
 
 <script>
-import { getFilePickerBuilder, showWarning, showSuccess, showError } from '@nextcloud/dialogs'
+import { showWarning, showSuccess, showError } from '@nextcloud/dialogs'
 import { mapActions, mapGetters } from 'vuex'
 
 import { requestFileInfo, getFileId } from '../../utils/files.js'
+import { pickDirectory } from '../../utils/directoryPicker.js'
 
 import { NcButton, NcCheckboxRadioSwitch } from '@nextcloud/vue'
 import PlusThick from 'vue-material-design-icons/PlusThick.vue'
@@ -241,16 +242,8 @@ export default {
 	},
 	methods: {
 		...mapActions(['runTask', 'getTasks']),
-		getDirectoriesPicker(title) {
-			return getFilePickerBuilder(title)
-				.setMultiSelect(false)
-				.addMimeTypeFilter('httpd/unix-directory')
-				.setType(1)
-				.allowDirectories(true)
-				.build()
-		},
 		openDirectoriesExplorer() {
-			this.getDirectoriesPicker(this.t('mediadc', 'Choose target directory')).pick().then(dir => {
+			pickDirectory(this.t('mediadc', 'Choose target directory')).then(dir => {
 				if (dir.startsWith('/')) {
 					requestFileInfo(dir).then(res => {
 						const fileid = getFileId(res.data)
@@ -279,7 +272,7 @@ export default {
 			})
 		},
 		openExcludeExplorer() {
-			this.getDirectoriesPicker(this.t('mediadc', 'Choose directory to exclude')).pick().then(dir => {
+			pickDirectory(this.t('mediadc', 'Choose directory to exclude')).then(dir => {
 				if (Object.values(this.excludeFileIds).findIndex(targetDir => targetDir === dir) === -1) {
 					if (dir.startsWith('/')) {
 						requestFileInfo(dir).then(res => {

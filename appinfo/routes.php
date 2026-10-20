@@ -42,6 +42,9 @@ return [
 		['name' => 'settings#truncate', 'url' => '/api/v1/settings/truncate/{name}', 'verb' => 'POST'],
 		['name' => 'settings#systemInfo', 'url' => '/api/v1/system-info', 'verb' => 'GET'],
 
+		// FOLDERS API
+		['name' => 'folders#index', 'url' => '/api/v1/folders', 'verb' => 'GET'],
+
 		// COLLECTOR API
 		['name' => 'collector#index', 'url' => '/api/v1/tasks/', 'verb' => 'GET'],
 		['name' => 'collector#details', 'url' => '/api/v1/tasks/{taskId}', 'verb' => 'GET'],
