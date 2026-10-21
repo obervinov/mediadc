@@ -11,12 +11,18 @@
 					{{ crumb.name }}
 				</button>
 			</div>
+			<NcTextField :value.sync="filter"
+				:label="t('mediadc', 'Filter directories')"
+				trailing-button-icon="close"
+				:show-trailing-button="filter !== ''"
+				@trailing-button-click="filter = ''" />
 			<div class="directory-picker__list">
 				<NcLoadingIcon v-if="loading" :size="32" />
 				<span v-else-if="error">{{ t('mediadc', 'Could not load directories') }}</span>
 				<span v-else-if="folders.length === 0">{{ t('mediadc', 'No subdirectories') }}</span>
+				<span v-else-if="filteredFolders.length === 0">{{ t('mediadc', 'No matching directories') }}</span>
 				<ul v-else>
-					<li v-for="folder in folders" :key="folder.fileid">
+					<li v-for="folder in filteredFolders" :key="folder.fileid">
 						<button type="button" class="directory-picker__folder" @click="open(folder.path)">
 							<Folder :size="20" />
 							<span>{{ folder.name }}</span>
@@ -39,8 +45,26 @@
 <script>
 import axios, { isCancel } from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import { NcButton, NcLoadingIcon, NcModal } from '@nextcloud/vue'
+import { NcButton, NcLoadingIcon, NcModal, NcTextField } from '@nextcloud/vue'
 import Folder from 'vue-material-design-icons/Folder.vue'
+
+const LAST_PATH_KEY = 'mediadc:directory-picker:last-path'
+
+const getLastPath = () => {
+	try {
+		return localStorage.getItem(LAST_PATH_KEY) || '/'
+	} catch (e) {
+		return '/'
+	}
+}
+
+const setLastPath = (path) => {
+	try {
+		localStorage.setItem(LAST_PATH_KEY, path)
+	} catch (e) {
+		console.debug(e)
+	}
+}
 
 export default {
 	name: 'DirectoryPicker',
@@ -48,6 +72,7 @@ export default {
 		NcButton,
 		NcLoadingIcon,
 		NcModal,
+		NcTextField,
 		Folder,
 	},
 	props: {
@@ -61,6 +86,7 @@ export default {
 		return {
 			path: '/',
 			folders: [],
+			filter: '',
 			loading: false,
 			error: false,
 			request: null,
@@ -76,12 +102,19 @@ export default {
 			})
 			return crumbs
 		},
+		filteredFolders() {
+			const filter = this.filter.trim().toLowerCase()
+			if (filter === '') {
+				return this.folders
+			}
+			return this.folders.filter(folder => folder.name.toLowerCase().includes(filter))
+		},
 		currentName() {
 			return this.breadcrumbs[this.breadcrumbs.length - 1].name
 		},
 	},
 	mounted() {
-		this.open('/')
+		this.open(getLastPath(), true)
 	},
 	beforeDestroy() {
 		if (this.request !== null) {
@@ -89,7 +122,7 @@ export default {
 		}
 	},
 	methods: {
-		open(path) {
+		open(path, fallbackToRoot = false) {
 			if (this.request !== null) {
 				this.request.abort()
 			}
@@ -102,9 +135,14 @@ export default {
 			}).then(res => {
 				this.path = res.data.path
 				this.folders = res.data.folders
+				this.filter = ''
 				this.loading = false
 			}).catch(err => {
 				if (isCancel(err)) {
+					return
+				}
+				if (fallbackToRoot && path !== '/') {
+					this.open('/')
 					return
 				}
 				console.debug(err)
@@ -113,6 +151,7 @@ export default {
 			})
 		},
 		choose() {
+			setLastPath(this.path)
 			this.$emit('choose', this.path)
 		},
 		cancel() {
